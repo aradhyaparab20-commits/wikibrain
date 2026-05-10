@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WikiBrain — Memory OS</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+    :root {
+      --bg: oklch(0.13 0.02 260);
+      --bg2: oklch(0.17 0.025 260 / 0.7);
+      --bg3: oklch(0.20 0.03 260 / 0.5);
+      --border: oklch(0.95 0.02 240 / 0.08);
+      --border-hi: oklch(0.78 0.18 175 / 0.35);
+      --text: oklch(0.95 0.01 240);
+      --muted: oklch(0.60 0.03 250);
+      --cyan: oklch(0.78 0.18 175);
+      --cyan-dim: oklch(0.78 0.18 175 / 0.15);
+      --purple: oklch(0.70 0.20 295);
+      --purple-dim: oklch(0.70 0.20 295 / 0.15);
+      --green: oklch(0.82 0.20 155);
+      --radius: 0.75rem;
+      --font: 'Space Grotesk', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --panel-left: 300px;
+      --panel-right: 320px;
+    }
+
+    /* ============================================================
+   RESET & BASE
+   ============================================================ */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============================================================
+   ATMOSPHERIC BACKGROUND
+   ============================================================ */
+    .neural-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 20%, oklch(0.3 0.12 175 / 0.20), transparent 60%),
+        radial-gradient(ellipse 70% 60% at 80% 80%, oklch(0.3 0.15 295 / 0.18), transparent 60%),
+        radial-gradient(ellipse 100% 80% at 50% 50%, oklch(0.18 0.04 250), oklch(0.08 0.015 260) 80%);
+    }
+
+    .neural-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 40%, oklch(0 0 0 / 0.5) 100%);
+    }
+
+    .grid-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background-image:
+        linear-gradient(oklch(0.95 0.02 240 / 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, oklch(0.95 0.02 240 / 0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    }
+
+    /* ============================================================
+   LAYOUT SHELL
+   ============================================================ */
+    #app {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: var(--panel-left) 1fr var(--panel-right);
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+      gap: 0;
+    }
+
+    /* ============================================================
+   GLASS SURFACE MIXIN
+   ============================================================ */
+    .glass {
+      background: linear-gradient(135deg, oklch(0.22 0.03 260 / 0.55), oklch(0.14 0.02 260 / 0.45));
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border: 1px solid var(--border);
+    }
+
+    /* ============================================================
+   TOP BAR (SEARCH)
+   ============================================================ */
+    #topbar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: oklch(0.15 0.025 260 / 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: var(--panel-left);
+      padding-right: 20px;
+      border-right: 1px solid var(--border);
+    }
+
+    .brand-orb {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, var(--cyan), oklch(0.45 0.18 200));
+      box-shadow: 0 0 16px oklch(0.78 0.18 175 / 0.5);
+      animation: breathe 4s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes breathe {
+
+      0%,
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 16px oklch(0.78 0.18 175 / 0.4);
+      }
+
+      50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 28px oklch(0.78 0.18 175 / 0.7);
+      }
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--cyan);
+      text-transform: uppercase;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      text-shadow: 0 0 20px oklch(0.78 0.18 195 / 0.4);
+      line-height: 1.1;
+    }
+
+    .search-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: oklch(0.95 0.02 240 / 0.05);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .search-wrap:focus-within {
+      border-color: var(--border-hi);
+      box-shadow: 0 0 0 3px oklch(0.78 0.18 175 / 0.12), inset 0 0 20px oklch(0.78 0.18 175 / 0.04);
+    }
+
+    .search-icon {
+      color: var(--muted);
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    #search-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      caret-color: var(--cyan);
+    }
+
+    #search-input::placeholder {
+      color: var(--muted);
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: oklch(0.95 0.02 240 / 0.04);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse-dot 2.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 0.5;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.4);
+      }
+    }
+
+    /* ============================================================
+   LEFT PANEL — MEMORY INDEX
+   ============================================================ */
+    #left-panel {
+      grid-column: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: oklch(0.15 0.02 260 / 0.6);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .panel-header-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+    }
+
+    .active-count {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--green);
+    }
+
+    .active-count::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    #page-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+      scrollbar-width: thin;
+      scrollbar-color: oklch(0.78 0.18 175 / 0.2) transparent;
+    }
+
+    #page-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #page-list::-webkit-scrollbar-thumb {
+      background: oklch(0.78 0.18 175 / 0.2);
+      border-radius: 99px;
+    }
+
+    .folder-header {
+      padding: 10px 20px 4px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .page-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 20px 8px 28px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      border-left: 2px solid transparent;
+    }
+
+    .page-item:hover {
+      background: oklch(0.78 0.18 175 / 0.06);
+      border-left-color: oklch(0.78 0.18 175 / 0.3);
+    }
+
+    .page-item.active {
+      background: linear-gradient(90deg, oklch(0.78 0.18 175 / 0.12), transparent);
+      border-left-color: var(--cyan);
+    }
+
+    .page-dot {
+      position: absolute;
+      left: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .page-item.active .page-dot {
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    .page-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .page-item-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .page-item.active .page-item-title {
+      color: var(--cyan);
+    }
+
+    .page-item-meta {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 1px;
+    }
+
+    .page-item-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .panel-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-footer-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .panel-footer-status {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--green);
+      letter-spacing: 0.08em;
+    }
+
+    /* ============================================================
+   CENTER — CONTENT AREA
+   ============================================================ */
+    #center {
+      grid-column: 2;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #center-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .center-header-left {
+      display: flex;
+      gap: 16px;
+    }
+
+    .center-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--green);
+    }
+
+    .center-status::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 5px var(--green);
+    }
+
+    #content-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 48px;
+      scrollbar-width: thin;
+      scrollbar-color: oklch(0.78 0.18 175 / 0.15) transparent;
+    }
+
+    #content-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #content-scroll::-webkit-scrollbar-thumb {
+      background: oklch(0.78 0.18 175 / 0.15);
+      border-radius: 99px;
+    }
+
+    /* Empty State */
+    #empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 16px;
+      color: var(--muted);
+      animation: float-up 0.6s ease both;
+    }
+
+    @keyframes float-up {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .empty-orb {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, oklch(0.78 0.18 175 / 0.3), oklch(0.45 0.18 200 / 0.1));
+      border: 1px solid oklch(0.78 0.18 175 / 0.2);
+      animation: breathe 4s ease-in-out infinite;
+    }
+
+    .empty-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .empty-sub {
+      font-size: 12px;
+      color: oklch(0.50 0.03 250);
+    }
+
+    /* Loading */
+    .loading-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .loading-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .loading-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: pulse-dot 1.4s ease-in-out infinite;
+    }
+
+    .loading-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    /* ============================================================
+   MARKDOWN CONTENT
+   ============================================================ */
+    #md-content {
+      max-width: 680px;
+      animation: float-up 0.4s ease both;
+    }
+
+    #md-content h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      text-shadow: 0 0 30px oklch(0.78 0.18 195 / 0.3);
+    }
+
+    #md-content h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 28px 0 12px;
+    }
+
+    #md-content h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 20px 0 8px;
+    }
+
+    #md-content p {
+      font-size: 14px;
+      color: oklch(0.82 0.02 240);
+      margin-bottom: 14px;
+      line-height: 1.75;
+    }
+
+    #md-content a.wikilink,
+    #md-content a.wikilink:visited {
+      color: var(--cyan);
+      text-decoration: none;
+      border-bottom: 1px solid oklch(0.78 0.18 175 / 0.3);
+      transition: border-color 0.2s, text-shadow 0.2s;
+    }
+
+    #md-content a.wikilink:hover {
+      text-shadow: 0 0 12px oklch(0.78 0.18 175 / 0.5);
+      border-bottom-color: var(--cyan);
+    }
+
+    #md-content a:not(.wikilink) {
+      color: var(--purple);
+      text-decoration: none;
+    }
+
+    #md-content a:not(.wikilink):hover {
+      text-decoration: underline;
+    }
+
+    #md-content pre {
+      background: oklch(0.17 0.025 260 / 0.8);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+
+    #md-content code {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--cyan);
+    }
+
+    #md-content p code {
+      background: oklch(0.78 0.18 175 / 0.1);
+      border: 1px solid oklch(0.78 0.18 175 / 0.2);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    #md-content ul,
+    #md-content ol {
+      margin: 0 0 14px 20px;
+      color: oklch(0.82 0.02 240);
+    }
+
+    #md-content li {
+      margin-bottom: 6px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    #md-content blockquote {
+      border-left: 3px solid var(--cyan);
+      padding: 8px 16px;
+      margin: 0 0 16px;
+      background: oklch(0.78 0.18 175 / 0.05);
+      border-radius: 0 6px 6px 0;
+      color: var(--muted);
+    }
+
+    #md-content hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ============================================================
+   RIGHT PANEL — INSPECTOR
+   ============================================================ */
+    #right-panel {
+      grid-column: 3;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+      background: oklch(0.15 0.02 260 / 0.6);
+      overflow: hidden;
+    }
+
+    .inspector-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .inspector-cluster {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .inspector-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+    }
+
+    .inspector-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .inspector-links {
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .inspector-badge {
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .badge-active {
+      background: oklch(0.82 0.20 155 / 0.15);
+      color: var(--green);
+      border: 1px solid oklch(0.82 0.20 155 / 0.3);
+    }
+
+    .badge-idle {
+      background: oklch(0.60 0.03 250 / 0.1);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .inspector-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 0;
+      scrollbar-width: thin;
+      scrollbar-color: oklch(0.78 0.18 175 / 0.15) transparent;
+    }
+
+    .inspector-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .inspector-scroll::-webkit-scrollbar-thumb {
+      background: oklch(0.78 0.18 175 / 0.15);
+      border-radius: 99px;
+    }
+
+    .inspector-section {
+      padding: 0 20px 16px;
+    }
+
+    .inspector-section-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .summary-text {
+      font-size: 12px;
+      color: oklch(0.78 0.02 240);
+      line-height: 1.65;
+    }
+
+    .synapse-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .synapse-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: oklch(0.95 0.02 240 / 0.03);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .synapse-item:hover {
+      background: oklch(0.78 0.18 175 / 0.07);
+      border-color: oklch(0.78 0.18 175 / 0.3);
+      transform: translateX(3px);
+    }
+
+    .synapse-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .synapse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 6px var(--cyan);
+      flex-shrink: 0;
+    }
+
+    .synapse-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .synapse-type {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    #inspector-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 10px;
+      color: var(--muted);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .inspector-empty-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .inspector-empty-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .inspector-empty-sub {
+      font-size: 11px;
+      color: oklch(0.45 0.03 250);
+    }
+
+    /* Inspector divider */
+    .inspector-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 20px 16px;
+    }
+
+    /* ============================================================
+   HIDDEN UTILITY
+   ============================================================ */
+    .hidden {
+      display: none !important;
+    }
+
+    /* ============================================================
+   SCROLLBAR (global thin)
+   ============================================================ */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: oklch(0.78 0.18 175 / 0.15) transparent;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Atmosphere -->
+  <div class="neural-bg"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- App Shell -->
+  <div id="app">
+
+    <!-- ── TOP BAR ─────────────────────────────────────── -->
+    <header id="topbar">
+      <div class="brand">
+        <div class="brand-orb"></div>
+        <div class="brand-text">
+          <span class="brand-label">WikiBrain</span>
+          <span class="brand-title">Memory Index</span>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <input type="text" id="search-input" placeholder="Search a memory…" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        <span id="status-label">IDLE</span>
+      </div>
+    </header>
+
+    <!-- ── LEFT PANEL ─────────────────────────────────── -->
+    <aside id="left-panel">
+      <div class="panel-header">
+        <div class="panel-header-label">WikiBrain</div>
+        <div class="panel-header-title">Memory Index</div>
+        <div class="active-count" id="active-count">0 ACTIVE CONCEPTS</div>
+      </div>
+      <div id="page-list"></div>
+      <div class="panel-footer">
+        <span class="panel-footer-label">SYNAPSE NET</span>
+        <span class="panel-footer-status">ONLINE</span>
+      </div>
+    </aside>
+
+    <!-- ── CENTER ─────────────────────────────────────── -->
+    <main id="center">
+      <div id="center-header">
+        <div class="center-header-left">
+          <span>MEMORY READER</span>
+          <span>·</span>
+          <span class="center-status" id="center-status-text">READY</span>
+        </div>
+        <div id="center-breadcrumb" style="color: var(--muted);">SELECT A NODE TO BEGIN</div>
+      </div>
+
+      <div id="content-scroll">
+        <!-- Empty state -->
+        <div id="empty-state">
+          <div class="empty-orb"></div>
+          <div class="empty-title">Select a page to begin reading</div>
+          <div class="empty-sub">Navigate using the Memory Index on the left</div>
+        </div>
+
+        <!-- Content area (hidden until page loaded) -->
+        <div id="md-content" class="hidden"></div>
+      </div>
+    </main>
+
+    <!-- ── RIGHT PANEL ────────────────────────────────── -->
+    <aside id="right-panel">
+      <!-- Inspector: empty state -->
+      <div id="inspector-empty">
+        <div class="inspector-empty-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
+          </svg>
+        </div>
+        <div class="inspector-empty-label">Node Inspector</div>
+        <div class="inspector-empty-sub">Select a page to inspect its connections and metadata</div>
+      </div>
+
+      <!-- Inspector: populated (hidden until page selected) -->
+      <div id="inspector-panel" class="hidden" style="display:flex;flex-direction:column;height:100%;">
+        <div class="inspector-header">
+          <div class="inspector-cluster" id="insp-cluster">GENERAL</div>
+          <div class="inspector-title" id="insp-title">—</div>
+          <div class="inspector-meta">
+            <span class="inspector-links" id="insp-links">0 RELATIONS</span>
+            <span class="inspector-badge badge-active" id="insp-badge">ACTIVATED</span>
+          </div>
+        </div>
+
+        <div class="inspector-scroll">
+          <!-- Summary -->
+          <div class="inspector-section" id="insp-summary-section">
+            <div class="inspector-section-label">AI SUMMARY</div>
+            <div class="summary-text" id="insp-summary">Loading…</div>
+          </div>
+
+          <div class="inspector-divider"></div>
+
+          <!-- Synapses (outgoing links) -->
+          <div class="inspector-section">
+            <div class="inspector-section-label">SYNAPSES</div>
+            <div class="synapse-list" id="insp-synapses"></div>
+          </div>
+
+          <div class="inspector-divider" id="insp-meta-divider"></div>
+
+          <!-- Metadata -->
+          <div class="inspector-section" id="insp-meta-section">
+            <div class="inspector-section-label">NODE METADATA</div>
+            <div id="insp-meta" style="font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 2;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /#app -->
+
+  <script>
+    /* ============================================================
+       STATE
+       ============================================================ */
+    let allPages = [];
+    let currentKey = null;
+
+    /* ============================================================
+       INIT — fetch page list
+       ============================================================ */
+    async function init() {
+      setStatus('LOADING');
+      try {
+        const res = await fetch('/api/list');
+
+        // Check content-type before parsing as JSON
+        const contentType = res.headers.get('content-type') || '';
+        if (!res.ok || !contentType.includes('application/json')) {
+          const raw = await res.text();
+          console.error('Non-JSON response from /api/list:', res.status, raw.slice(0, 300));
+          showError(
+            'API connection failed',
+            `<b>/api/list</b> returned HTTP ${res.status} with content-type <b>${contentType || 'unknown'}</b>.<br><br>` +
+            `Make sure your Cloudflare Worker / backend is running and the <code>/api/list</code> route is registered.<br><br>` +
+            `<details><summary style="cursor:pointer;color:var(--cyan)">Raw response preview</summary>` +
+            `<pre style="margin-top:8px;white-space:pre-wrap;font-size:11px;color:var(--muted)">${escHtml(raw.slice(0, 600))}</pre></details>`
+          );
+          setStatus('ERROR');
+          return;
+        }
+
+        const data = await res.json();
+
+        // Support both { keys: [...] } and bare array
+        const keys = Array.isArray(data) ? data : (data.keys || []);
+
+        allPages = keys.map(k => {
+          const parts = k.split(':');
+          return {
+            key: k,
+            folder: parts[1] || 'General',
+            title: parts.slice(2).join('/') || k
+          };
+        });
+
+        renderList(allPages);
+        document.getElementById('active-count').textContent = allPages.length + ' ACTIVE CONCEPTS';
+        setStatus('READY');
+      } catch (e) {
+        setStatus('ERROR');
+        console.error('Failed to load pages:', e);
+        showError(
+          'Network error',
+          `Could not reach <b>/api/list</b>.<br><br>` +
+          `Error: <code>${escHtml(String(e))}</code><br><br>` +
+          `Check that your dev server is running (<code>npm run dev</code>) and accessible.`
+        );
+      }
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function showError(title, html) {
+      const scroll = document.getElementById('content-scroll');
+      const empty = document.getElementById('empty-state');
+      const content = document.getElementById('md-content');
+      empty.classList.add('hidden');
+      content.classList.add('hidden');
+
+      let errEl = document.getElementById('api-error');
+      if (!errEl) {
+        errEl = document.createElement('div');
+        errEl.id = 'api-error';
+        errEl.style.cssText = [
+          'max-width:560px',
+          'margin:40px auto',
+          'padding:24px 28px',
+          'border-radius:12px',
+          'border:1px solid oklch(0.65 0.22 25 / 0.3)',
+          'background:oklch(0.65 0.22 25 / 0.07)',
+          'animation:float-up 0.4s ease both',
+        ].join(';');
+        scroll.appendChild(errEl);
+      }
+      errEl.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:oklch(0.65 0.22 25);box-shadow:0 0 8px oklch(0.65 0.22 25);flex-shrink:0"></div>
+      <span style="font-size:14px;font-weight:600;color:oklch(0.85 0.15 25)">${title}</span>
+    </div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8">${html}</div>
+    <button onclick="document.getElementById('api-error').remove();init();"
+      style="margin-top:16px;padding:7px 16px;border-radius:8px;border:1px solid var(--border-hi);
+             background:var(--cyan-dim);color:var(--cyan);font-family:var(--font);font-size:12px;
+             font-weight:600;cursor:pointer;letter-spacing:0.05em;">
+      ↺ &nbsp;Retry
+    </button>
+  `;
+    }
+
+    /* ============================================================
+       RENDER SIDEBAR LIST
+       ============================================================ */
+    function renderList(pages) {
+      const list = document.getElementById('page-list');
+      list.innerHTML = '';
+
+      const groups = {};
+      pages.forEach(p => {
+        if (!groups[p.folder]) groups[p.folder] = [];
+        groups[p.folder].push(p);
+      });
+
+      const folders = Object.keys(groups).sort();
+      let index = 1;
+
+      folders.forEach(folder => {
+        const header = document.createElement('div');
+        header.className = 'folder-header';
+        header.textContent = folder;
+        list.appendChild(header);
+
+        groups[folder]
+          .sort((a, b) => a.title.localeCompare(b.title))
+          .forEach(page => {
+            const item = document.createElement('div');
+            item.className = 'page-item';
+            item.dataset.key = page.key;
+
+            const dot = document.createElement('div');
+            dot.className = 'page-dot';
+
+            const info = document.createElement('div');
+            info.className = 'page-item-info';
+
+            const title = document.createElement('div');
+            title.className = 'page-item-title';
+            title.textContent = page.title;
+
+            const meta = document.createElement('div');
+            meta.className = 'page-item-meta';
+            meta.textContent = page.folder.toUpperCase();
+
+            const num = document.createElement('div');
+            num.className = 'page-item-num';
+            num.textContent = String(index).padStart(2, '0');
+
+            info.appendChild(title);
+            info.appendChild(meta);
+            item.appendChild(dot);
+            item.appendChild(info);
+            item.appendChild(num);
+
+            item.addEventListener('click', () => {
+              document.querySelectorAll('.page-item').forEach(el => el.classList.remove('active'));
+              item.classList.add('active');
+              loadPage(page.key, page);
+            });
+
+            list.appendChild(item);
+            index++;
+          });
+      });
+    }
+
+    /* ============================================================
+       SEARCH
+       ============================================================ */
+    document.getElementById('search-input').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) { renderList(allPages); return; }
+      const filtered = allPages.filter(p =>
+        p.title.toLowerCase().includes(q) || p.key.toLowerCase().includes(q)
+      );
+      renderList(filtered);
+      // Re-mark active
+      if (currentKey) {
+        const el = document.querySelector(`.page-item[data-key="${currentKey}"]`);
+        if (el) el.classList.add('active');
+      }
+    });
+
+    /* ============================================================
+       LOAD & RENDER PAGE
+       ============================================================ */
+    async function loadPage(key, pageMeta) {
+      currentKey = key;
+      setStatus('LOADING');
+
+      const empty = document.getElementById('empty-state');
+      const content = document.getElementById('md-content');
+      const scroll = document.getElementById('content-scroll');
+
+      empty.classList.add('hidden');
+      content.classList.add('hidden');
+      content.innerHTML = '';
+
+      // Show loading indicator
+      const loader = document.createElement('div');
+      loader.className = 'loading-bar';
+      loader.innerHTML = `<span>Retrieving memory</span><div class="loading-dots"><span></span><span></span><span></span></div>`;
+      scroll.insertBefore(loader, content);
+
+      // Update breadcrumb
+      document.getElementById('center-breadcrumb').textContent =
+        (pageMeta.folder.toUpperCase()) + ' · ' + pageMeta.title;
+
+      // Update inspector header optimistically
+      updateInspectorHeader(pageMeta, []);
+
+      try {
+        const res = await fetch('/api/page?key=' + encodeURIComponent(key));
+        const ct = res.headers.get('content-type') || '';
+        if (!res.ok || !ct.includes('application/json')) {
+          const raw = await res.text();
+          throw new Error(`/api/page returned HTTP ${res.status} (${ct}): ${raw.slice(0, 200)}`);
+        }
+        const data = await res.json();
+
+        const rawContent = (data.content || '_Empty page_').replace(/\\n/g, '\n');
+
+        // Parse wikilinks for inspector
+        const links = extractWikilinks(rawContent);
+
+        // Render markdown
+        content.innerHTML = renderMd(rawContent);
+        loader.remove();
+        content.classList.remove('hidden');
+        scroll.scrollTop = 0;
+
+        // Bind wikilinks
+        content.querySelectorAll('a.wikilink').forEach(el => {
+          el.addEventListener('click', e => {
+            e.preventDefault();
+            const target = allPages.find(p =>
+              p.key.endsWith(':' + el.dataset.target) || p.title === el.dataset.target
+            );
+            if (target) {
+              document.querySelectorAll('.page-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.key === target.key);
+              });
+              loadPage(target.key, target);
+            }
+          });
+        });
+
+        // Update inspector with real data
+        updateInspectorFull(pageMeta, links, rawContent);
+        setStatus('LIVE');
+
+      } catch (err) {
+        loader.remove();
+        content.innerHTML = '<p style="color:var(--muted)">Failed to load page.</p>';
+        content.classList.remove('hidden');
+        setStatus('ERROR');
+        console.error(err);
+      }
+    }
+
+    /* ============================================================
+       INSPECTOR PANEL
+       ============================================================ */
+    function updateInspectorHeader(page, links) {
+      const empty = document.getElementById('inspector-empty');
+      const panel = document.getElementById('inspector-panel');
+      empty.classList.add('hidden');
+      panel.classList.remove('hidden');
+      panel.style.display = 'flex';
+
+      document.getElementById('insp-cluster').textContent = page.folder.toUpperCase();
+      document.getElementById('insp-title').textContent = page.title;
+      document.getElementById('insp-links').textContent = links.length + ' RELATIONS';
+      document.getElementById('insp-summary').textContent = 'Loading…';
+      document.getElementById('insp-synapses').innerHTML = '';
+      document.getElementById('insp-meta').innerHTML = '';
+    }
+
+    function updateInspectorFull(page, links, rawContent) {
+      document.getElementById('insp-links').textContent = links.length + ' RELATIONS';
+
+      // Summary — first paragraph or first 180 chars of content
+      const plainText = rawContent.replace(/#+\s/g, '').replace(/\[\[.*?\]\]/g, '').replace(/[*_`]/g, '').trim();
+      const firstPara = plainText.split('\n\n')[0] || '';
+      const summary = firstPara.length > 220 ? firstPara.slice(0, 220) + '…' : firstPara;
+      document.getElementById('insp-summary').textContent = summary || 'No summary available.';
+
+      // Synapses list
+      const synapseEl = document.getElementById('insp-synapses');
+      synapseEl.innerHTML = '';
+      if (links.length === 0) {
+        const none = document.createElement('div');
+        none.style.cssText = 'font-size:11px;color:var(--muted);padding:4px 0;';
+        none.textContent = 'No outgoing links found.';
+        synapseEl.appendChild(none);
+      } else {
+        links.forEach(link => {
+          const target = allPages.find(p =>
+            p.key.endsWith(':' + link) || p.title === link
+          );
+          const item = document.createElement('div');
+          item.className = 'synapse-item';
+
+          const left = document.createElement('div');
+          left.className = 'synapse-left';
+
+          const dot = document.createElement('div');
+          dot.className = 'synapse-dot';
+
+          const name = document.createElement('div');
+          name.className = 'synapse-name';
+          name.textContent = link;
+
+          left.appendChild(dot);
+          left.appendChild(name);
+
+          const type = document.createElement('div');
+          type.className = 'synapse-type';
+          type.textContent = target ? target.folder.toUpperCase() : 'UNKNOWN';
+
+          item.appendChild(left);
+          item.appendChild(type);
+
+          if (target) {
+            item.addEventListener('click', () => {
+              document.querySelectorAll('.page-item').forEach(el => el.classList.remove('active'));
+              const sideEl = document.querySelector(`.page-item[data-key="${target.key}"]`);
+              if (sideEl) sideEl.classList.add('active');
+              loadPage(target.key, target);
+            });
+          } else {
+            item.style.opacity = '0.5';
+            item.style.cursor = 'default';
+          }
+
+          synapseEl.appendChild(item);
+        });
+      }
+
+      // Metadata
+      const meta = document.getElementById('insp-meta');
+      const wordCount = rawContent.split(/\s+/).filter(Boolean).length;
+      const charCount = rawContent.length;
+      const linkCount = links.length;
+      meta.innerHTML = [
+        `<div><span style="color:var(--muted)">KEY &nbsp;&nbsp;&nbsp;&nbsp;</span>${page.key}</div>`,
+        `<div><span style="color:var(--muted)">FOLDER &nbsp;</span>${page.folder}</div>`,
+        `<div><span style="color:var(--muted)">WORDS &nbsp;&nbsp;</span>${wordCount}</div>`,
+        `<div><span style="color:var(--muted)">CHARS &nbsp;&nbsp;</span>${charCount}</div>`,
+        `<div><span style="color:var(--muted)">LINKS &nbsp;&nbsp;</span>${linkCount}</div>`,
+      ].join('');
+    }
+
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+    function extractWikilinks(raw) {
+      const matches = [...raw.matchAll(/\[\[([^\]]+)\]\]/g)];
+      return [...new Set(matches.map(m => m[1]))];
+    }
+
+    function setStatus(s) {
+      const el = document.getElementById('status-label');
+      const cs = document.getElementById('center-status-text');
+      const dot = document.querySelector('.status-dot');
+      el.textContent = s;
+      cs.textContent = s;
+      if (s === 'LIVE') {
+        dot.style.background = 'var(--green)';
+        dot.style.boxShadow = '0 0 6px var(--green)';
+      } else if (s === 'LOADING') {
+        dot.style.background = 'var(--cyan)';
+        dot.style.boxShadow = '0 0 6px var(--cyan)';
+      } else if (s === 'ERROR') {
+        dot.style.background = 'oklch(0.65 0.22 25)';
+        dot.style.boxShadow = '0 0 6px oklch(0.65 0.22 25)';
+      } else {
+        dot.style.background = 'var(--green)';
+        dot.style.boxShadow = '0 0 6px var(--green)';
+      }
+    }
+
+    /* ============================================================
+       MARKDOWN RENDERER (original logic preserved)
+       ============================================================ */
+    function renderMd(raw) {
+      let h = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+      const BT = String.fromCharCode(96);
+      const fence = new RegExp(BT + BT + BT + '(\\w*)\\n([\\s\\S]*?)' + BT + BT + BT, 'g');
+      const inlineCode = new RegExp(BT + '([^' + BT + '\\n]+)' + BT, 'g');
+
+      h = h.replace(fence, (_, l, c) => '<pre><code>' + c + '</code></pre>');
+      h = h.replace(inlineCode, '<code>$1</code>');
+      h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+      h = h.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+      h = h.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+      h = h.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+      h = h.replace(/^---+$/gm, '<hr>');
+      h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      h = h.replace(/^- \[ \] (.+)$/gm, '<li><input type="checkbox" disabled> $1</li>');
+      h = h.replace(/^- \[x\] (.+)$/gm, '<li><input type="checkbox" checked disabled> $1</li>');
+      h = h.replace(/((?:^- .+\n?)+)/gm, m => '<ul>' + m.trim().split('\n').map(l => '<li>' + l.replace(/^- /, '') + '</li>').join('') + '</ul>');
+      h = h.replace(/\[\[([^\]]+)\]\]/g, (_, t) => `<a href="#" class="wikilink" data-target="${t}">${t}</a>`);
+      h = h.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+      h = h.replace(/\n{2,}/g, '\n</p><p>');
+      h = '<p>' + h + '</p>';
+      h = h.replace(/<p>\s*(<(?:h[1-6]|ul|ol|pre|blockquote|hr)[^>]*>)/g, '$1');
+      h = h.replace(/(<\/(?:h[1-6]|ul|ol|pre|blockquote|hr)>)\s*<\/p>/g, '$1');
+      return h;
+    }
+
+    /* ============================================================
+       BOOT
+       ============================================================ */
+    init();
+  </script>
+</body>
+
+</html>
