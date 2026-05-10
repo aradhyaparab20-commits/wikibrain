@@ -19,9 +19,7 @@
 
         :root {
             --bg: #040508;
-            --surface: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.06);
-            --muted: #3a3d42;
+            --border: rgba(255, 255, 255, 0.07);
             --subtle: #5a6070;
             --body: #a8b0c0;
             --bright: #e8ecf4;
@@ -39,28 +37,24 @@
             overflow: hidden;
         }
 
-        /* ── ATMOSPHERE ─────────────────────────────────── */
-        #atmosphere {
+        #atmo {
             position: fixed;
             inset: 0;
             z-index: 0;
             pointer-events: none;
             background:
-                radial-gradient(ellipse 60% 50% at 25% 30%, rgba(56, 189, 248, 0.06) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 60% at 75% 70%, rgba(168, 85, 247, 0.06) 0%, transparent 70%),
-                radial-gradient(ellipse 80% 40% at 50% 50%, rgba(16, 185, 129, 0.03) 0%, transparent 60%);
+                radial-gradient(ellipse 60% 55% at 20% 25%, rgba(56, 189, 248, 0.08) 0%, transparent 65%),
+                radial-gradient(ellipse 55% 60% at 80% 75%, rgba(168, 85, 247, 0.08) 0%, transparent 65%),
+                radial-gradient(ellipse 70% 40% at 55% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 55%);
         }
 
-        /* Subtle scanlines */
-        #atmosphere::after {
+        #atmo::after {
             content: '';
             position: absolute;
             inset: 0;
-            background-image: repeating-linear-gradient(0deg, transparent, transparent 2px,
-                    rgba(255, 255, 255, 0.008) 2px, rgba(255, 255, 255, 0.008) 4px);
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255, 255, 255, 0.005) 3px, rgba(255, 255, 255, 0.005) 4px);
         }
 
-        /* ── PARTICLE CANVAS ─────────────────────────────── */
         #particle-canvas {
             position: fixed;
             inset: 0;
@@ -68,29 +62,28 @@
             pointer-events: none;
         }
 
-        /* ── TOPBAR ──────────────────────────────────────── */
+        /* TOPBAR */
         #topbar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: 52px;
+            height: 54px;
             display: flex;
             align-items: center;
             gap: 20px;
             padding: 0 24px;
-            background: rgba(4, 5, 8, 0.85);
-            backdrop-filter: blur(16px);
+            background: rgba(4, 5, 8, 0.92);
+            backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
             z-index: 200;
         }
 
         .logo {
             font-family: var(--display);
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
             color: var(--bright);
-            letter-spacing: 0.03em;
         }
 
         .logo em {
@@ -99,14 +92,13 @@
         }
 
         .logo-sep {
-            color: var(--muted);
-            margin: 0 6px;
+            color: #252830;
+            margin: 0 8px;
         }
 
         .logo-sub {
             font-family: var(--mono);
             font-size: 10px;
-            font-weight: 400;
             letter-spacing: 0.15em;
             color: var(--subtle);
             text-transform: uppercase;
@@ -127,42 +119,75 @@
         .nav-link:hover {
             color: #38bdf8;
             border-color: rgba(56, 189, 248, 0.4);
-            background: rgba(56, 189, 248, 0.05);
+            background: rgba(56, 189, 248, 0.06);
         }
 
         #stats-bar {
             margin-left: auto;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 28px;
         }
 
         .stat {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            font-size: 9px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
         }
 
         .stat-val {
             font-family: var(--display);
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 800;
             color: var(--bright);
             line-height: 1;
         }
 
         .stat-lbl {
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
             color: var(--subtle);
             margin-top: 2px;
         }
 
-        /* ── GRAPH ───────────────────────────────────────── */
+        /* EDGE LEGEND */
+        #edge-legend {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 16px;
+            border-left: 1px solid var(--border);
+            margin-left: 8px;
+        }
+
+        .edge-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 9px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--subtle);
+        }
+
+        .edge-legend-line {
+            width: 24px;
+            height: 2px;
+            border-radius: 1px;
+        }
+
+        .edge-legend-dash {
+            width: 24px;
+            height: 0;
+            border-top: 2px dashed;
+            opacity: 0.5;
+        }
+
+        /* GRAPH */
         #graph {
             position: fixed;
-            inset: 52px 0 0 0;
+            inset: 54px 0 0 0;
             z-index: 10;
         }
 
@@ -171,66 +196,37 @@
             height: 100%;
         }
 
-        /* SVG elements */
-        .link-base {
-            stroke-width: 1;
-            stroke-opacity: 0.25;
-        }
-
-        .link-glow {
-            stroke-width: 3;
-            stroke-opacity: 0;
-            filter: url(#glow-link);
-            transition: stroke-opacity 0.3s;
-        }
-
-        .link-flow {
-            stroke-width: 1.5;
-            stroke-dasharray: 4 12;
-            stroke-opacity: 0;
-        }
-
-        .node-outer {
-            fill-opacity: 0;
-            stroke-width: 1.5;
-        }
-
-        .node-inner {}
-
-        .node-core {}
-
         .node-label {
             font-family: var(--mono);
-            font-size: 9px;
+            font-size: 11px;
             font-weight: 500;
-            fill: var(--subtle);
-            letter-spacing: 0.05em;
+            fill: #6b7585;
+            letter-spacing: 0.03em;
             pointer-events: none;
             text-transform: uppercase;
-            transition: fill 0.2s;
         }
 
-        /* ── TOOLTIP ─────────────────────────────────────── */
+        /* TOOLTIP */
         #tooltip {
             position: fixed;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.15s;
             z-index: 300;
-            min-width: 200px;
+            min-width: 220px;
         }
 
         .tt-inner {
-            background: rgba(8, 10, 16, 0.95);
+            background: rgba(4, 5, 10, 0.97);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 14px 16px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 16px 18px;
+            backdrop-filter: blur(24px);
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
         .tt-folder {
-            font-size: 8px;
+            font-size: 9px;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             margin-bottom: 6px;
@@ -239,24 +235,24 @@
 
         .tt-name {
             font-family: var(--display);
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 700;
             color: var(--bright);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             line-height: 1.2;
         }
 
         .tt-divider {
             height: 1px;
-            background: var(--border);
-            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            margin-bottom: 10px;
         }
 
         .tt-row {
             display: flex;
             justify-content: space-between;
             font-size: 10px;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
 
         .tt-key {
@@ -268,25 +264,53 @@
             font-weight: 500;
         }
 
+        .tt-keywords {
+            margin-top: 10px;
+        }
+
+        .tt-kw-label {
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--subtle);
+            margin-bottom: 6px;
+        }
+
+        .tt-kw-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .tt-kw-chip {
+            font-size: 9px;
+            padding: 2px 7px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--body);
+            letter-spacing: 0.04em;
+        }
+
         .tt-hint {
             font-size: 9px;
-            color: var(--muted);
-            margin-top: 10px;
+            color: #3a3d42;
+            margin-top: 12px;
             letter-spacing: 0.05em;
         }
 
-        /* ── LEGEND ──────────────────────────────────────── */
+        /* LEGEND */
         #legend {
             position: fixed;
             bottom: 24px;
             left: 24px;
             z-index: 200;
-            background: rgba(8, 10, 16, 0.9);
+            background: rgba(4, 5, 10, 0.94);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px 18px;
-            backdrop-filter: blur(20px);
-            min-width: 160px;
+            border-radius: 10px;
+            padding: 16px 20px;
+            backdrop-filter: blur(24px);
+            min-width: 175px;
         }
 
         #legend h4 {
@@ -294,14 +318,14 @@
             letter-spacing: 0.15em;
             text-transform: uppercase;
             color: var(--subtle);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 7px;
+            margin-bottom: 8px;
             cursor: pointer;
             transition: opacity 0.2s;
         }
@@ -310,46 +334,29 @@
             margin-bottom: 0;
         }
 
-        .legend-glyph {
-            position: relative;
-            width: 14px;
-            height: 14px;
+        .legend-item:hover {
+            opacity: 0.7;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
             flex-shrink: 0;
         }
 
-        .legend-glyph-circle {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-        }
-
-        .legend-glyph-ring {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: 1px solid currentColor;
-            opacity: 0.3;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
         .legend-name {
-            font-size: 10px;
+            font-size: 11px;
             color: var(--body);
-            letter-spacing: 0.04em;
+            flex: 1;
         }
 
         .legend-count {
             font-size: 9px;
             color: var(--subtle);
-            margin-left: auto;
         }
 
-        /* ── CONTROLS ────────────────────────────────────── */
+        /* CONTROLS */
         #controls {
             position: fixed;
             bottom: 24px;
@@ -361,49 +368,91 @@
         }
 
         .ctrl-btn {
-            width: 36px;
-            height: 36px;
-            background: rgba(8, 10, 16, 0.9);
+            width: 38px;
+            height: 38px;
+            background: rgba(4, 5, 10, 0.94);
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 8px;
             color: var(--subtle);
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.15s;
-            backdrop-filter: blur(20px);
-            font-family: var(--mono);
+            backdrop-filter: blur(24px);
         }
 
         .ctrl-btn:hover {
             border-color: rgba(56, 189, 248, 0.5);
             color: #38bdf8;
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
         }
 
-        /* ── FOCUS MODE indicator ───────────────────────── */
+        /* SIMILARITY THRESHOLD SLIDER */
+        #sim-control {
+            position: fixed;
+            bottom: 24px;
+            right: 72px;
+            z-index: 200;
+            background: rgba(4, 5, 10, 0.94);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            backdrop-filter: blur(24px);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 160px;
+        }
+
+        #sim-control label {
+            font-size: 9px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--subtle);
+        }
+
+        #sim-control .sim-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #sim-slider {
+            flex: 1;
+            accent-color: #a78bfa;
+            cursor: pointer;
+        }
+
+        #sim-val {
+            font-size: 10px;
+            color: var(--bright);
+            font-family: var(--mono);
+            min-width: 28px;
+        }
+
         #focus-label {
             position: fixed;
-            top: 68px;
+            top: 66px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 9px;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             color: var(--subtle);
-            background: rgba(8, 10, 16, 0.8);
+            background: rgba(4, 5, 10, 0.92);
             border: 1px solid var(--border);
             border-radius: 99px;
-            padding: 4px 14px;
+            padding: 5px 16px;
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 200;
             pointer-events: none;
+            white-space: nowrap;
         }
 
-        /* ── LOADING ─────────────────────────────────────── */
+        /* LOADING */
         #loading {
             position: fixed;
             inset: 0;
@@ -417,13 +466,13 @@
         }
 
         .loading-orb {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            border: 2px solid rgba(56, 189, 248, 0.2);
+            border: 2px solid rgba(56, 189, 248, 0.12);
             border-top-color: #38bdf8;
-            animation: spin 1s linear infinite;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+            animation: spin 0.9s linear infinite;
+            box-shadow: 0 0 28px rgba(56, 189, 248, 0.25);
         }
 
         @keyframes spin {
@@ -440,9 +489,9 @@
         }
 
         .loading-bar {
-            width: 200px;
+            width: 240px;
             height: 2px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
             border-radius: 99px;
             overflow: hidden;
         }
@@ -452,31 +501,34 @@
             width: 0%;
             border-radius: 99px;
             background: linear-gradient(90deg, #38bdf8, #a78bfa);
-            transition: width 0.3s ease;
+            transition: width 0.25s ease;
         }
 
-        /* ── NODE PING animation ─────────────────────────── */
         @keyframes node-ping {
             0% {
+                stroke-opacity: 0.45;
                 r: 0;
-                opacity: 0.6;
+            }
+
+            80% {
+                stroke-opacity: 0;
             }
 
             100% {
-                r: 40;
-                opacity: 0;
+                stroke-opacity: 0;
+                r: 80;
             }
         }
 
         .node-ping {
-            animation: node-ping 2s ease-out infinite;
+            animation: node-ping 3.5s ease-out infinite;
         }
     </style>
 </head>
 
 <body>
 
-    <div id="atmosphere"></div>
+    <div id="atmo"></div>
     <canvas id="particle-canvas"></canvas>
 
     <div id="loading">
@@ -488,15 +540,24 @@
     </div>
 
     <div id="topbar">
-        <div class="logo">
-            <em>Wiki</em>Brain
-            <span class="logo-sep">—</span>
-            <span class="logo-sub">Synapse Map</span>
+        <div class="logo"><em>Wiki</em>Brain <span class="logo-sep">—</span> <span class="logo-sub">Synapse Map</span>
         </div>
         <a href="/" class="nav-link">← Memory Index</a>
+        <div id="edge-legend">
+            <div class="edge-legend-item">
+                <div class="edge-legend-line" style="background:#38bdf8;"></div>
+                Wikilink
+            </div>
+            <div class="edge-legend-item">
+                <div class="edge-legend-dash" style="border-color:#a78bfa;"></div>
+                Similarity
+            </div>
+        </div>
         <div id="stats-bar">
             <div class="stat"><span class="stat-val" id="stat-nodes">0</span><span class="stat-lbl">Nodes</span></div>
-            <div class="stat"><span class="stat-val" id="stat-edges">0</span><span class="stat-lbl">Synapses</span>
+            <div class="stat"><span class="stat-val" id="stat-edges">0</span><span class="stat-lbl">Wikilinks</span>
+            </div>
+            <div class="stat"><span class="stat-val" id="stat-sim">0</span><span class="stat-lbl">Similarities</span>
             </div>
             <div class="stat"><span class="stat-val" id="stat-folders">0</span><span class="stat-lbl">Clusters</span>
             </div>
@@ -505,24 +566,24 @@
 
     <div id="graph"><svg id="svg">
             <defs>
-                <filter id="glow-node" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+                <filter id="glow-sm" x="-60%" y="-60%" width="220%" height="220%">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b" />
                     <feMerge>
-                        <feMergeNode in="blur" />
+                        <feMergeNode in="b" />
                         <feMergeNode in="SourceGraphic" />
                     </feMerge>
                 </filter>
-                <filter id="glow-link" x="-200%" y="-200%" width="500%" height="500%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+                <filter id="glow-lg" x="-150%" y="-150%" width="400%" height="400%">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="b" />
                     <feMerge>
-                        <feMergeNode in="blur" />
+                        <feMergeNode in="b" />
                         <feMergeNode in="SourceGraphic" />
                     </feMerge>
                 </filter>
-                <filter id="glow-strong" x="-200%" y="-200%" width="500%" height="500%">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+                <filter id="glow-edge" x="-100%" y="-100%" width="300%" height="300%">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b" />
                     <feMerge>
-                        <feMergeNode in="blur" />
+                        <feMergeNode in="b" />
                         <feMergeNode in="SourceGraphic" />
                     </feMerge>
                 </filter>
@@ -535,8 +596,13 @@
             <div class="tt-name" id="tt-name"></div>
             <div class="tt-divider"></div>
             <div class="tt-row"><span class="tt-key">Words</span><span class="tt-val" id="tt-words"></span></div>
-            <div class="tt-row"><span class="tt-key">Connections</span><span class="tt-val" id="tt-links"></span></div>
+            <div class="tt-row"><span class="tt-key">Wikilinks</span><span class="tt-val" id="tt-links"></span></div>
+            <div class="tt-row"><span class="tt-key">Similar to</span><span class="tt-val" id="tt-sim"></span></div>
             <div class="tt-row"><span class="tt-key">Cluster</span><span class="tt-val" id="tt-cluster"></span></div>
+            <div class="tt-keywords">
+                <div class="tt-kw-label">Top Keywords</div>
+                <div class="tt-kw-chips" id="tt-chips"></div>
+            </div>
             <div class="tt-hint">Click to open · Drag to reposition</div>
         </div>
     </div>
@@ -546,446 +612,576 @@
         <div id="legend-items"></div>
     </div>
 
-    <div id="controls">
-        <button class="ctrl-btn" id="zoom-in" title="Zoom in">+</button>
-        <button class="ctrl-btn" id="zoom-out" title="Zoom out">−</button>
-        <button class="ctrl-btn" id="reset" title="Reset view">⊙</button>
+    <div id="sim-control">
+        <label>Similarity Threshold</label>
+        <div class="sim-row">
+            <input type="range" id="sim-slider" min="1" max="10" value="4" step="1">
+            <span id="sim-val">4</span>
+        </div>
+        <label style="color:rgba(90,96,112,0.6);font-size:8px;">shared keywords needed</label>
     </div>
 
-    <div id="focus-label" id="focus-label">FOCUS MODE — click canvas to exit</div>
+    <div id="controls">
+        <button class="ctrl-btn" id="btn-zi" title="Zoom in">+</button>
+        <button class="ctrl-btn" id="btn-zo" title="Zoom out">−</button>
+        <button class="ctrl-btn" id="btn-rst" title="Reset view">⊙</button>
+    </div>
+
+    <div id="focus-label"></div>
 
     <script>
-        /* ============================================================
-           PALETTE  — one vivid color per folder
-           ============================================================ */
-        const PALETTE = [
-            '#38bdf8', // sky
-            '#a78bfa', // violet
-            '#34d399', // emerald
-            '#fb923c', // orange
-            '#f472b6', // pink
-            '#facc15', // yellow
-            '#60a5fa', // blue
-            '#f87171', // red
-            '#4ade80', // green
-            '#e879f9', // fuchsia
-            '#2dd4bf', // teal
-            '#a3e635', // lime
+        /* ── PALETTE ───────────────────────────────── */
+        const PAL = [
+            '#38bdf8', '#a78bfa', '#34d399', '#fb923c',
+            '#f472b6', '#facc15', '#60a5fa', '#f87171',
+            '#4ade80', '#e879f9', '#2dd4bf', '#a3e635',
         ];
 
-        function folderColor(folder, folderList) {
-            const idx = folderList.indexOf(folder);
-            return PALETTE[idx % PALETTE.length];
-        }
+        /* ── STOPWORDS (ignored in similarity) ─────── */
+        const STOP = new Set([
+            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+            'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do',
+            'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'shall',
+            'this', 'that', 'these', 'those', 'it', 'its', 'i', 'we', 'you', 'he', 'she',
+            'they', 'what', 'which', 'who', 'when', 'where', 'how', 'all', 'more', 'also',
+            'from', 'as', 'by', 'not', 'so', 'if', 'then', 'than', 'into', 'about', 'can',
+            'just', 'up', 'out', 'there', 'their', 'our', 'your', 'my', 'his', 'her', 'we',
+            'one', 'two', 'three', 'new', 'use', 'used', 'using', 'each', 'some', 'any',
+            'after', 'before', 'over', 'under', 'through', 'between', 'during', 'without',
+            'within', 'along', 'across', 'behind', 'beyond', 'around', 'among', 'while',
+        ]);
 
-        /* ============================================================
-           PARSE
-           ============================================================ */
+        /* ── UTILS ─────────────────────────────────── */
         function parseKey(key) {
-            const parts = key.split(':');
-            return { key, folder: parts[1] || 'misc', name: parts.slice(2).join('/') || key };
+            const p = key.split(':');
+            return { key, folder: p[1] || 'misc', name: p.slice(2).join('/') || key };
         }
-
-        function extractLinks(content, allKeys) {
-            const out = [];
-            const re = /\[\[([^\]]+)\]\]/g;
-            let m;
-            while ((m = re.exec(content)) !== null) {
-                const t = m[1];
-                const found = allKeys.find(k => k.endsWith(':' + t) || k.includes(t));
-                if (found) out.push(found);
-            }
-            return out;
-        }
-
-        /* ============================================================
-           LOAD DATA
-           ============================================================ */
-        function setLoading(msg, pct) {
+        function setLoad(msg, pct) {
             document.getElementById('loading-msg').textContent = msg;
             document.getElementById('loading-fill').style.width = pct + '%';
         }
 
-        async function buildGraph() {
-            setLoading('Fetching memory index…', 10);
-            const listRes = await fetch('/api/list');
-            const listData = await listRes.json();
-            const keys = Array.isArray(listData) ? listData : (listData.keys || []);
+        /* ── KEYWORD EXTRACTION ─────────────────────
+           Extract meaningful words from content,
+           strip markdown, stopwords, short words      */
+        function extractKeywords(content) {
+            const clean = content
+                .replace(/```[\s\S]*?```/g, '')   // code blocks
+                .replace(/`[^`]+`/g, '')          // inline code
+                .replace(/#+\s/g, '')             // headings
+                .replace(/\[\[([^\]]+)\]\]/g, '$1') // wikilinks → text
+                .replace(/[^a-zA-Z0-9\s\-_]/g, ' ')
+                .toLowerCase();
 
-            const pages = [];
-            const links = [];
-            const total = keys.length;
+            const words = clean.split(/\s+/).filter(w =>
+                w.length > 3 && !STOP.has(w) && !/^\d+$/.test(w)
+            );
 
-            for (let i = 0; i < total; i++) {
-                const key = keys[i];
-                setLoading(`Loading node ${i + 1} / ${total}…`, 10 + ((i / total) * 80));
-                const pageRes = await fetch('/api/page?key=' + encodeURIComponent(key));
-                const pageData = await pageRes.json();
-                const content = pageData.content || '';
-                const words = content.split(/\s+/).filter(Boolean).length;
-                const parsed = parseKey(key);
-                pages.push({ ...parsed, words, content, linkCount: 0 });
+            // TF: count frequency
+            const freq = {};
+            words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
 
-                for (const t of extractLinks(content, keys)) {
-                    if (t !== key) links.push({ source: key, target: t });
-                }
-            }
-
-            // Degree count
-            const degree = {};
-            links.forEach(l => {
-                degree[l.source] = (degree[l.source] || 0) + 1;
-                degree[l.target] = (degree[l.target] || 0) + 1;
-            });
-            pages.forEach(p => { p.linkCount = degree[p.key] || 0; });
-
-            setLoading('Rendering synapse map…', 95);
-            return { pages, links };
+            // Sort by frequency, return top 40
+            return Object.entries(freq)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 40)
+                .map(([w, c]) => ({ word: w, count: c }));
         }
 
-        /* ============================================================
-           NODE RADIUS
-           ============================================================ */
+        /* ── SIMILARITY SCORE ───────────────────────
+           Count shared keywords weighted by frequency */
+        function similarity(kwA, kwB) {
+            const mapB = {};
+            kwB.forEach(k => { mapB[k.word] = k.count; });
+            let score = 0;
+            kwA.forEach(k => {
+                if (mapB[k.word]) score += Math.min(k.count, mapB[k.word]);
+            });
+            return score;
+        }
+
+        /* ── WIKILINK EXTRACTION ────────────────────── */
+        function resolveLinks(content, pages) {
+            const out = [];
+            const re = /\[\[([^\]|\n#]+)/g;
+            let m;
+            while ((m = re.exec(content)) !== null) {
+                const raw = m[1].trim();
+                if (!raw) continue;
+                const rLow = raw.toLowerCase();
+                const rSlug = rLow.replace(/\s+/g, '-');
+                const hit = pages.find(p => {
+                    const seg = p.key.split(':').slice(2).join('/');
+                    const sLow = seg.toLowerCase();
+                    const sSlug = sLow.replace(/\s+/g, '-');
+                    const nLow = p.name.toLowerCase();
+                    const nSlug = nLow.replace(/\s+/g, '-');
+                    return seg === raw || sLow === rLow || sSlug === rSlug
+                        || p.name === raw || nLow === rLow || nSlug === rSlug || p.key === raw;
+                });
+                if (hit && !out.includes(hit.key)) out.push(hit.key);
+            }
+            return out;
+        }
+
+        /* ── NODE SIZE ──────────────────────────────── */
         function nodeR(d) {
-            const base = Math.max(5, Math.min(18, Math.sqrt(d.words) * 0.9));
-            const bonus = Math.min(10, d.linkCount * 1.5);
+            const base = Math.max(20, Math.min(50, Math.sqrt(d.words || 20) * 2.4));
+            const bonus = Math.min(24, (d.totalDegree || 0) * 3.5);
             return base + bonus;
         }
 
-        /* ============================================================
-           PARTICLES (ambient background dots)
-           ============================================================ */
+        /* ── PARTICLES ──────────────────────────────── */
         function initParticles() {
-            const canvas = document.getElementById('particle-canvas');
-            const ctx = canvas.getContext('2d');
-            let W, H, particles;
-
-            function resize() {
-                W = canvas.width = window.innerWidth;
-                H = canvas.height = window.innerHeight;
-            }
-
-            function makeParticle() {
-                return {
-                    x: Math.random() * W, y: Math.random() * H,
-                    r: Math.random() * 1.2 + 0.3,
-                    vx: (Math.random() - 0.5) * 0.12,
-                    vy: (Math.random() - 0.5) * 0.12,
-                    alpha: Math.random() * 0.25 + 0.05,
-                    pulse: Math.random() * Math.PI * 2,
-                };
-            }
-
+            const cv = document.getElementById('particle-canvas');
+            const cx = cv.getContext('2d');
+            let W, H, pts;
+            const resize = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; };
+            const mkPt = () => ({
+                x: Math.random() * W, y: Math.random() * H,
+                r: Math.random() * 1.5 + 0.3,
+                vx: (Math.random() - .5) * 0.08, vy: (Math.random() - .5) * 0.08,
+                a: Math.random() * 0.18 + 0.04, ph: Math.random() * Math.PI * 2,
+            });
             resize();
-            particles = Array.from({ length: 120 }, makeParticle);
+            pts = Array.from({ length: 140 }, mkPt);
             window.addEventListener('resize', resize);
-
-            function frame() {
-                ctx.clearRect(0, 0, W, H);
-                particles.forEach(p => {
-                    p.x += p.vx; p.y += p.vy; p.pulse += 0.01;
+            (function f() {
+                cx.clearRect(0, 0, W, H);
+                pts.forEach(p => {
+                    p.x += p.vx; p.y += p.vy; p.ph += 0.007;
                     if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
                     if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-                    const a = p.alpha * (0.7 + 0.3 * Math.sin(p.pulse));
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(168,180,210,${a})`;
-                    ctx.fill();
+                    const a = p.a * (0.6 + 0.4 * Math.sin(p.ph));
+                    cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    cx.fillStyle = `rgba(155,170,205,${a})`; cx.fill();
                 });
-                requestAnimationFrame(frame);
-            }
-            frame();
+                requestAnimationFrame(f);
+            })();
         }
 
-        /* ============================================================
-           MAIN RENDER
-           ============================================================ */
+        /* ── BUILD GRAPH DATA ───────────────────────── */
+        async function buildGraph() {
+            setLoad('Fetching memory index…', 5);
+            const lRes = await fetch('/api/list');
+            if (!lRes.ok) throw new Error('/api/list HTTP ' + lRes.status);
+            const lData = await lRes.json();
+            const keys = Array.isArray(lData) ? lData : (lData.keys || []);
+            const total = keys.length;
+
+            // Pass 1 — fetch all pages + extract keywords
+            const pages = [];
+            const contentMap = {};
+            const kwMap = {};  // key → [{word,count}]
+
+            for (let i = 0; i < total; i++) {
+                const key = keys[i];
+                setLoad(`Loading ${i + 1}/${total}…`, 5 + (i / total) * 60);
+                try {
+                    const r = await fetch('/api/page?key=' + encodeURIComponent(key));
+                    const d = await r.json();
+                    const c = d.content || '';
+                    contentMap[key] = c;
+                    kwMap[key] = extractKeywords(c);
+                    const words = c.split(/\s+/).filter(Boolean).length;
+                    pages.push({ ...parseKey(key), words, keywords: kwMap[key], linkCount: 0, simCount: 0, totalDegree: 0 });
+                } catch (_) {
+                    contentMap[key] = ''; kwMap[key] = [];
+                    pages.push({ ...parseKey(key), words: 20, keywords: [], linkCount: 0, simCount: 0, totalDegree: 0 });
+                }
+            }
+
+            // Pass 2 — wikilinks
+            setLoad('Resolving wikilinks…', 68);
+            const wikiLinks = [];
+            const wikiSeen = new Set();
+            for (const page of pages) {
+                for (const tKey of resolveLinks(contentMap[page.key] || '', pages)) {
+                    if (tKey === page.key) continue;
+                    const id = [page.key, tKey].sort().join('\x01');
+                    if (wikiSeen.has(id)) continue;
+                    wikiSeen.add(id);
+                    wikiLinks.push({ source: page.key, target: tKey, type: 'wiki' });
+                }
+            }
+
+            // Pass 3 — similarity edges (computed client-side, no AI needed)
+            setLoad('Computing semantic similarity…', 78);
+            const simLinks = [];
+            const simScores = {}; // key → [{target,score}]
+            for (let i = 0; i < pages.length; i++) {
+                for (let j = i + 1; j < pages.length; j++) {
+                    const pa = pages[i], pb = pages[j];
+                    // Skip if already wikilinked
+                    const wid = [pa.key, pb.key].sort().join('\x01');
+                    if (wikiSeen.has(wid)) continue;
+                    const score = similarity(pa.keywords, pb.keywords);
+                    if (score > 0) {
+                        if (!simScores[pa.key]) simScores[pa.key] = [];
+                        if (!simScores[pb.key]) simScores[pb.key] = [];
+                        simScores[pa.key].push({ target: pb.key, score });
+                        simScores[pb.key].push({ target: pa.key, score });
+                    }
+                }
+            }
+            // Store sim scores on pages for tooltip
+            pages.forEach(p => { p.simScores = (simScores[p.key] || []).sort((a, b) => b.score - a.score); });
+
+            // Will be filtered by threshold slider — store all with score
+            const allSimLinks = [];
+            const simSeen = new Set();
+            for (const page of pages) {
+                for (const { target, score } of (simScores[page.key] || [])) {
+                    const id = [page.key, target].sort().join('\x01');
+                    if (simSeen.has(id)) continue;
+                    simSeen.add(id);
+                    allSimLinks.push({ source: page.key, target, type: 'sim', score });
+                }
+            }
+
+            // Degree counts
+            const deg = {};
+            wikiLinks.forEach(l => { deg[l.source] = (deg[l.source] || 0) + 1; deg[l.target] = (deg[l.target] || 0) + 1; });
+            pages.forEach(p => {
+                p.linkCount = deg[p.key] || 0;
+                p.totalDegree = p.linkCount;
+            });
+
+            setLoad('Rendering…', 96);
+            return { pages, wikiLinks, allSimLinks };
+        }
+
+        /* ── MAIN ───────────────────────────────────── */
         async function render() {
             initParticles();
-
-            const { pages, links } = await buildGraph();
+            const { pages, wikiLinks, allSimLinks } = await buildGraph();
             document.getElementById('loading').style.display = 'none';
 
             const folders = [...new Set(pages.map(p => p.folder))].sort();
-            const colorMap = {};
-            folders.forEach(f => { colorMap[f] = folderColor(f, folders); });
+            const clr = f => PAL[folders.indexOf(f) % PAL.length];
 
             // Stats
             document.getElementById('stat-nodes').textContent = pages.length;
-            document.getElementById('stat-edges').textContent = links.length;
+            document.getElementById('stat-edges').textContent = wikiLinks.length;
             document.getElementById('stat-folders').textContent = folders.length;
 
             // Legend
-            const legendEl = document.getElementById('legend-items');
-            const folderCount = {};
-            pages.forEach(p => { folderCount[p.folder] = (folderCount[p.folder] || 0) + 1; });
+            const fCount = {};
+            pages.forEach(p => { fCount[p.folder] = (fCount[p.folder] || 0) + 1; });
+            const lgEl = document.getElementById('legend-items');
             folders.forEach(f => {
-                const c = colorMap[f];
-                const item = document.createElement('div');
-                item.className = 'legend-item';
-                item.dataset.folder = f;
-                item.innerHTML = `
-      <div class="legend-glyph">
-        <div class="legend-glyph-ring" style="color:${c}; border-color:${c};"></div>
-        <div class="legend-glyph-circle" style="background:${c};"></div>
-      </div>
-      <span class="legend-name">${f}</span>
-      <span class="legend-count">${folderCount[f]}</span>`;
-                item.addEventListener('click', () => focusFolder(f));
-                legendEl.appendChild(item);
+                const c = clr(f), el = document.createElement('div');
+                el.className = 'legend-item';
+                el.innerHTML = `<div class="legend-dot" style="background:${c};box-shadow:0 0 8px ${c}70;"></div>
+      <span class="legend-name">${f}</span><span class="legend-count">${fCount[f]}</span>`;
+                el.onclick = () => focusFolder(f);
+                lgEl.appendChild(el);
             });
 
-            /* SVG setup */
+            /* SVG + zoom */
             const svg = d3.select('#svg');
             const W = window.innerWidth;
-            const H = window.innerHeight - 52;
+            const H = window.innerHeight - 54;
             const g = svg.append('g');
 
-            /* Zoom */
-            const zoom = d3.zoom()
-                .scaleExtent([0.05, 6])
+            const zoom = d3.zoom().scaleExtent([0.04, 8])
                 .on('zoom', e => g.attr('transform', e.transform));
             svg.call(zoom);
 
-            document.getElementById('zoom-in').onclick = () => svg.transition().duration(300).call(zoom.scaleBy, 1.35);
-            document.getElementById('zoom-out').onclick = () => svg.transition().duration(300).call(zoom.scaleBy, 0.74);
-            document.getElementById('reset').onclick = () => svg.transition().duration(600)
-                .call(zoom.transform, d3.zoomIdentity.translate(W / 2, H / 2));
+            document.getElementById('btn-zi').onclick = () => svg.transition().duration(280).call(zoom.scaleBy, 1.4);
+            document.getElementById('btn-zo').onclick = () => svg.transition().duration(280).call(zoom.scaleBy, 0.72);
+            document.getElementById('btn-rst').onclick = () => svg.transition().duration(600)
+                .call(zoom.transform, d3.zoomIdentity.translate(W / 2, H / 2).scale(0.82));
 
-            /* Simulation */
-            const simulation = d3.forceSimulation(pages)
-                .force('link', d3.forceLink(links).id(d => d.key).distance(d => {
-                    const sr = nodeR(d.source), tr = nodeR(d.target);
-                    return 80 + sr + tr + Math.random() * 30;
-                }).strength(0.4))
-                .force('charge', d3.forceManyBody().strength(d => -350 - d.linkCount * 20))
-                .force('center', d3.forceCenter(W / 2, H / 2))
-                .force('collision', d3.forceCollide().radius(d => nodeR(d) + 24).strength(0.9))
-                .alphaDecay(0.015);
+            /* ── THRESHOLD SLIDER ────────────────────── */
+            let threshold = 4;
+            const slider = document.getElementById('sim-slider');
+            const simVal = document.getElementById('sim-val');
 
-            /* ── LINKS ────────────────────────────────────── */
-            const linkG = g.append('g').attr('class', 'links');
+            function getSimLinks(t) {
+                return allSimLinks.filter(l => l.score >= t);
+            }
 
-            // Glow layer
-            const linkGlow = linkG.selectAll('.link-glow').data(links).join('line')
-                .attr('class', 'link-glow')
-                .attr('stroke', d => colorMap[pages.find(p => p.key === (d.source.key || d.source))?.folder] || '#38bdf8')
-                .attr('stroke-width', 3).attr('stroke-opacity', 0)
-                .attr('filter', 'url(#glow-link)');
+            /* ── SIMULATION ──────────────────────────── */
+            // Combine wikilinks + filtered simlinks for simulation
+            function makeSimData(t) {
+                return [...wikiLinks, ...getSimLinks(t)];
+            }
 
-            // Base layer
-            const linkBase = linkG.selectAll('.link-base').data(links).join('line')
-                .attr('class', 'link-base')
-                .attr('stroke', '#1e2530').attr('stroke-width', 1)
-                .attr('stroke-opacity', 0.5);
+            let currentThreshold = threshold;
+            let allLinks = makeSimData(currentThreshold);
 
-            // Animated dash flow layer
-            const linkFlow = linkG.selectAll('.link-flow').data(links).join('line')
-                .attr('class', 'link-flow')
-                .attr('stroke', d => colorMap[pages.find(p => p.key === (d.source.key || d.source))?.folder] || '#38bdf8')
-                .attr('stroke-width', 1.5)
-                .attr('stroke-dasharray', '3 14')
-                .attr('stroke-opacity', 0);
+            const sim = d3.forceSimulation(pages)
+                .force('link', d3.forceLink(allLinks).id(d => d.key)
+                    .distance(d => {
+                        const r1 = nodeR(d.source), r2 = nodeR(d.target);
+                        // Similarity links pull closer than wikilinks
+                        return d.type === 'sim' ? r1 + r2 + 35 : r1 + r2 + 55;
+                    })
+                    .strength(d => d.type === 'sim' ? 0.25 : 0.55))
+                .force('charge', d3.forceManyBody()
+                    .strength(d => -180 - d.totalDegree * 25)
+                    .distanceMax(350))
+                .force('center', d3.forceCenter(W / 2, H / 2).strength(0.06))
+                .force('collide', d3.forceCollide().radius(d => nodeR(d) + 14).strength(0.85))
+                .alphaDecay(0.011)
+                .velocityDecay(0.44);
 
-            // Animate dash offset
-            (function animateFlow() {
-                let offset = 0;
-                function tick() {
-                    offset -= 0.5;
-                    linkFlow.attr('stroke-dashoffset', offset);
-                    requestAnimationFrame(tick);
-                }
-                tick();
+            /* ── EDGE LAYERS ──────────────────────────── */
+            const lG = g.append('g');
+
+            // ─ Similarity edges (dashed, purple)
+            let simGlow = lG.append('g');
+            let simBase = lG.append('g');
+            let simFlow = lG.append('g');
+
+            // ─ Wikilink edges (solid, folder-colored)
+            const wikiGlowG = lG.append('g');
+            const wikiBaseG = lG.append('g');
+            const wikiFlowG = lG.append('g');
+
+            // Wiki edges — static (don't change with slider)
+            const wGlow = wikiGlowG.selectAll('line').data(wikiLinks).join('line')
+                .attr('stroke', d => { const s = pages.find(p => p.key === (d.source.key || d.source)); return s ? clr(s.folder) : '#38bdf8'; })
+                .attr('stroke-width', 5).attr('stroke-opacity', 0)
+                .attr('filter', 'url(#glow-edge)');
+
+            const wBase = wikiBaseG.selectAll('line').data(wikiLinks).join('line')
+                .attr('stroke', d => { const s = pages.find(p => p.key === (d.source.key || d.source)); return s ? clr(s.folder) : '#38bdf8'; })
+                .attr('stroke-width', 1.8).attr('stroke-opacity', 0.30);
+
+            const wFlow = wikiFlowG.selectAll('line').data(wikiLinks).join('line')
+                .attr('stroke', d => { const s = pages.find(p => p.key === (d.source.key || d.source)); return s ? clr(s.folder) : '#38bdf8'; })
+                .attr('stroke-width', 1.5).attr('stroke-dasharray', '4 10').attr('stroke-opacity', 0.12);
+
+            // Similarity edges — rebuilt when slider changes
+            let sGlow, sBase, sFlow;
+
+            function buildSimEdges(t) {
+                const sLinks = getSimLinks(t);
+                document.getElementById('stat-sim').textContent = sLinks.length;
+
+                simGlow.selectAll('*').remove();
+                simBase.selectAll('*').remove();
+                simFlow.selectAll('*').remove();
+
+                sGlow = simGlow.selectAll('line').data(sLinks).join('line')
+                    .attr('stroke', '#a78bfa').attr('stroke-width', 4)
+                    .attr('stroke-opacity', 0).attr('filter', 'url(#glow-edge)');
+
+                sBase = simBase.selectAll('line').data(sLinks).join('line')
+                    .attr('stroke', '#a78bfa').attr('stroke-width', 1.2)
+                    .attr('stroke-opacity', 0.18)
+                    .attr('stroke-dasharray', '3 8');
+
+                sFlow = simFlow.selectAll('line').data(sLinks).join('line')
+                    .attr('stroke', '#a78bfa').attr('stroke-width', 1)
+                    .attr('stroke-dasharray', '2 12').attr('stroke-opacity', 0.08);
+            }
+
+            buildSimEdges(currentThreshold);
+
+            // Dash animation
+            let dOff = 0;
+            (function flowLoop() {
+                dOff -= 0.35;
+                wFlow.attr('stroke-dashoffset', dOff);
+                if (sFlow) sFlow.attr('stroke-dashoffset', dOff * 0.6);
+                requestAnimationFrame(flowLoop);
             })();
 
-            /* ── NODES ────────────────────────────────────── */
-            const nodeG = g.append('g').attr('class', 'nodes');
+            /* ── SLIDER INTERACTION ────────────────────── */
+            slider.addEventListener('input', function () {
+                currentThreshold = +this.value;
+                simVal.textContent = currentThreshold;
+                buildSimEdges(currentThreshold);
 
-            const nodeEl = nodeG.selectAll('.node').data(pages).join('g')
-                .attr('class', 'node')
-                .attr('cursor', 'pointer')
+                // Rebuild simulation links
+                const newLinks = makeSimData(currentThreshold);
+                sim.force('link', d3.forceLink(newLinks).id(d => d.key)
+                    .distance(d => {
+                        const r1 = nodeR(d.source || pages.find(p => p.key === d.source)),
+                            r2 = nodeR(d.target || pages.find(p => p.key === d.target));
+                        return d.type === 'sim' ? (r1 || 30) + (r2 || 30) + 35 : (r1 || 30) + (r2 || 30) + 55;
+                    })
+                    .strength(d => d.type === 'sim' ? 0.2 : 0.55));
+                sim.alpha(0.3).restart();
+            });
+
+            /* ── NODES ────────────────────────────────── */
+            const nG = g.append('g');
+            const nEl = nG.selectAll('.nd').data(pages).join('g')
+                .attr('class', 'nd').attr('cursor', 'pointer')
                 .call(d3.drag()
-                    .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+                    .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
                     .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
-                    .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; })
+                    .on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
                 );
 
-            // Ping ring (animated)
-            nodeEl.append('circle')
-                .attr('class', 'node-ping')
-                .attr('r', d => nodeR(d) + 2)
-                .attr('fill', 'none')
-                .attr('stroke', d => colorMap[d.folder])
-                .attr('stroke-width', 1)
-                .attr('stroke-opacity', 0.15)
+            // Ping
+            nEl.append('circle').attr('class', 'node-ping')
+                .attr('r', d => nodeR(d)).attr('fill', 'none')
+                .attr('stroke', d => clr(d.folder)).attr('stroke-width', 1.5)
                 .each(function (d) {
-                    // Stagger the ping animation
-                    d3.select(this)
-                        .attr('style', `animation-delay: ${Math.random() * 3}s; animation-duration: ${2.5 + Math.random() * 2}s`);
+                    d3.select(this).attr('style',
+                        `animation-delay:${(Math.random() * 5).toFixed(2)}s;animation-duration:${(3 + Math.random() * 2.5).toFixed(2)}s`);
                 });
 
             // Outer halo
-            nodeEl.append('circle')
-                .attr('class', 'node-outer')
-                .attr('r', d => nodeR(d) + 6)
-                .attr('fill', 'none')
-                .attr('stroke', d => colorMap[d.folder])
-                .attr('stroke-width', 1)
-                .attr('stroke-opacity', 0.12);
+            nEl.append('circle')
+                .attr('r', d => nodeR(d) + 10).attr('fill', 'none')
+                .attr('stroke', d => clr(d.folder)).attr('stroke-width', 1).attr('stroke-opacity', 0.09);
 
-            // Main glow (blurred layer behind)
-            nodeEl.append('circle')
-                .attr('r', d => nodeR(d) * 1.8)
-                .attr('fill', d => colorMap[d.folder])
-                .attr('fill-opacity', 0.04)
-                .attr('filter', 'url(#glow-strong)');
+            // Diffuse glow
+            nEl.append('circle')
+                .attr('r', d => nodeR(d) * 2.2)
+                .attr('fill', d => clr(d.folder)).attr('fill-opacity', 0.055)
+                .attr('filter', 'url(#glow-lg)');
 
-            // Inner circle
-            nodeEl.append('circle')
-                .attr('class', 'node-inner')
+            // Main body
+            nEl.append('circle').attr('class', 'node-body')
                 .attr('r', d => nodeR(d))
-                .attr('fill', d => colorMap[d.folder])
-                .attr('fill-opacity', 0.18)
-                .attr('stroke', d => colorMap[d.folder])
-                .attr('stroke-width', 1.5)
-                .attr('stroke-opacity', 0.7)
-                .attr('filter', 'url(#glow-node)');
+                .attr('fill', d => clr(d.folder)).attr('fill-opacity', 0.17)
+                .attr('stroke', d => clr(d.folder)).attr('stroke-width', 2).attr('stroke-opacity', 0.82)
+                .attr('filter', 'url(#glow-sm)');
 
-            // Core dot
-            nodeEl.append('circle')
-                .attr('class', 'node-core')
-                .attr('r', d => Math.max(2, nodeR(d) * 0.4))
-                .attr('fill', d => colorMap[d.folder])
-                .attr('fill-opacity', 0.9)
-                .attr('filter', 'url(#glow-node)');
+            // Core
+            nEl.append('circle').attr('class', 'node-core')
+                .attr('r', d => Math.max(5, nodeR(d) * 0.38))
+                .attr('fill', d => clr(d.folder)).attr('fill-opacity', 0.95)
+                .attr('filter', 'url(#glow-sm)');
 
             // Label
-            nodeEl.append('text')
-                .attr('class', 'node-label')
-                .attr('dy', d => nodeR(d) + 14)
-                .attr('text-anchor', 'middle')
-                .text(d => d.name.length > 20 ? d.name.slice(0, 18) + '…' : d.name);
+            nEl.append('text').attr('class', 'node-label')
+                .attr('dy', d => nodeR(d) + 17).attr('text-anchor', 'middle')
+                .text(d => d.name.length > 22 ? d.name.slice(0, 20) + '…' : d.name);
 
-            /* ── TOOLTIP ──────────────────────────────────── */
-            const tooltipEl = document.getElementById('tooltip');
+            /* ── TOOLTIP ──────────────────────────────── */
+            const ttEl = document.getElementById('tooltip');
 
-            nodeEl
+            nEl
                 .on('mouseover', function (e, d) {
-                    const c = colorMap[d.folder];
+                    const c = clr(d.folder);
                     document.getElementById('tt-folder').textContent = d.folder;
                     document.getElementById('tt-folder').style.color = c;
                     document.getElementById('tt-name').textContent = d.name;
-                    document.getElementById('tt-words').textContent = d.words.toLocaleString();
-                    document.getElementById('tt-links').textContent = d.linkCount;
+                    document.getElementById('tt-words').textContent = (d.words || 0).toLocaleString();
+                    document.getElementById('tt-links').textContent = d.linkCount || 0;
                     document.getElementById('tt-cluster').textContent = d.folder;
-                    tooltipEl.style.opacity = '1';
 
-                    // Highlight connected
-                    const connected = new Set([d.key]);
-                    links.forEach(l => {
-                        if (l.source.key === d.key) connected.add(l.target.key);
-                        if (l.target.key === d.key) connected.add(l.source.key);
+                    // Top similar pages
+                    const topSim = (d.simScores || [])
+                        .filter(s => s.score >= currentThreshold).slice(0, 3)
+                        .map(s => { const p = pages.find(x => x.key === s.target); return p ? p.name : '?'; });
+                    document.getElementById('tt-sim').textContent = topSim.length ? topSim.join(', ') : 'none';
+
+                    // Keywords chips
+                    const chips = document.getElementById('tt-chips');
+                    chips.innerHTML = '';
+                    (d.keywords || []).slice(0, 8).forEach(k => {
+                        const chip = document.createElement('span');
+                        chip.className = 'tt-kw-chip'; chip.textContent = k.word;
+                        chips.appendChild(chip);
                     });
 
-                    // Dim non-connected nodes
-                    nodeEl.selectAll('circle.node-inner')
-                        .attr('fill-opacity', n => connected.has(n.key) ? 0.35 : 0.04)
-                        .attr('stroke-opacity', n => connected.has(n.key) ? 1 : 0.1);
-                    nodeEl.selectAll('circle.node-core')
-                        .attr('fill-opacity', n => connected.has(n.key) ? 1 : 0.1);
-                    nodeEl.selectAll('text.node-label')
-                        .style('fill', n => connected.has(n.key) ? '#e8ecf4' : '#232830')
-                        .style('font-size', n => n.key === d.key ? '11px' : '9px');
+                    ttEl.style.opacity = '1';
 
-                    // Brighten links
-                    linkGlow.attr('stroke-opacity', l =>
-                        (l.source.key === d.key || l.target.key === d.key) ? 0.6 : 0);
-                    linkBase.attr('stroke-opacity', l =>
-                        (l.source.key === d.key || l.target.key === d.key) ? 0.8 : 0.08);
-                    linkFlow.attr('stroke-opacity', l =>
-                        (l.source.key === d.key || l.target.key === d.key) ? 0.8 : 0);
+                    // Connected set (wiki + sim)
+                    const conn = new Set([d.key]);
+                    const allCurLinks = [...wikiLinks, ...getSimLinks(currentThreshold)];
+                    allCurLinks.forEach(l => {
+                        if (l.source.key === d.key) conn.add(l.target.key);
+                        if (l.target.key === d.key) conn.add(l.source.key);
+                    });
+
+                    nEl.selectAll('.node-body')
+                        .attr('fill-opacity', n => conn.has(n.key) ? 0.42 : 0.03)
+                        .attr('stroke-opacity', n => conn.has(n.key) ? 1 : 0.06);
+                    nEl.selectAll('.node-core')
+                        .attr('fill-opacity', n => conn.has(n.key) ? 1 : 0.05);
+                    nEl.selectAll('.node-label')
+                        .style('fill', n => conn.has(n.key) ? '#dce4f0' : '#1e2228')
+                        .style('font-size', n => n.key === d.key ? '13px' : '11px');
+
+                    const isW = l => l.source.key === d.key || l.target.key === d.key;
+                    wGlow.attr('stroke-opacity', l => isW(l) ? 0.75 : 0);
+                    wBase.attr('stroke-opacity', l => isW(l) ? 0.95 : 0.04);
+                    wFlow.attr('stroke-opacity', l => isW(l) ? 0.9 : 0);
+                    if (sGlow) { sGlow.attr('stroke-opacity', l => isW(l) ? 0.75 : 0); }
+                    if (sBase) { sBase.attr('stroke-opacity', l => isW(l) ? 0.85 : 0.03); }
+                    if (sFlow) { sFlow.attr('stroke-opacity', l => isW(l) ? 0.8 : 0); }
                 })
                 .on('mousemove', e => {
-                    const x = e.clientX, y = e.clientY;
-                    const flip = x > window.innerWidth - 240;
-                    tooltipEl.style.left = flip ? (x - 220) + 'px' : (x + 16) + 'px';
-                    tooltipEl.style.top = (y - 60) + 'px';
+                    const flip = e.clientX > innerWidth - 250;
+                    ttEl.style.left = (flip ? e.clientX - 240 : e.clientX + 16) + 'px';
+                    ttEl.style.top = (e.clientY - 80) + 'px';
                 })
                 .on('mouseleave', () => {
-                    tooltipEl.style.opacity = '0';
-                    nodeEl.selectAll('circle.node-inner')
-                        .attr('fill-opacity', 0.18).attr('stroke-opacity', 0.7);
-                    nodeEl.selectAll('circle.node-core').attr('fill-opacity', 0.9);
-                    nodeEl.selectAll('text.node-label').style('fill', '#5a6070').style('font-size', '9px');
-                    linkGlow.attr('stroke-opacity', 0);
-                    linkBase.attr('stroke', '#1e2530').attr('stroke-opacity', 0.5);
-                    linkFlow.attr('stroke-opacity', 0);
+                    ttEl.style.opacity = '0';
+                    nEl.selectAll('.node-body').attr('fill-opacity', 0.17).attr('stroke-opacity', 0.82);
+                    nEl.selectAll('.node-core').attr('fill-opacity', 0.95);
+                    nEl.selectAll('.node-label').style('fill', '#6b7585').style('font-size', '11px');
+                    wGlow.attr('stroke-opacity', 0); wBase.attr('stroke-opacity', 0.30); wFlow.attr('stroke-opacity', 0.12);
+                    if (sGlow) sGlow.attr('stroke-opacity', 0);
+                    if (sBase) sBase.attr('stroke-opacity', 0.18);
+                    if (sFlow) sFlow.attr('stroke-opacity', 0.08);
                 })
-                .on('click', (e, d) => {
-                    window.location.href = '/?openKey=' + encodeURIComponent(d.key);
-                });
+                .on('click', (e, d) => { window.location.href = '/?openKey=' + encodeURIComponent(d.key); });
 
-            /* ── FOLDER FOCUS ─────────────────────────────── */
-            let focusedFolder = null;
-            const focusLabel = document.getElementById('focus-label');
-
-            function focusFolder(folder) {
-                if (focusedFolder === folder) { clearFocus(); return; }
-                focusedFolder = folder;
-                focusLabel.textContent = `CLUSTER: ${folder.toUpperCase()} — click legend again to exit`;
-                focusLabel.style.opacity = '1';
-
-                nodeEl.selectAll('circle.node-inner')
-                    .attr('fill-opacity', n => n.folder === folder ? 0.35 : 0.03)
-                    .attr('stroke-opacity', n => n.folder === folder ? 0.8 : 0.08);
-                nodeEl.selectAll('circle.node-core')
-                    .attr('fill-opacity', n => n.folder === folder ? 1 : 0.05);
-                nodeEl.selectAll('text.node-label')
-                    .style('fill', n => n.folder === folder ? '#e8ecf4' : '#1c2028');
-                linkBase.attr('stroke-opacity', l => {
-                    const sf = pages.find(p => p.key === l.source.key)?.folder;
-                    const tf = pages.find(p => p.key === l.target.key)?.folder;
-                    return (sf === folder || tf === folder) ? 0.6 : 0.04;
+            /* ── CLUSTER FOCUS ─────────────────────────── */
+            let aFocus = null;
+            const fLbl = document.getElementById('focus-label');
+            function focusFolder(f) {
+                if (aFocus === f) { clearFocus(); return; }
+                aFocus = f; fLbl.textContent = `Cluster: ${f} — click again to exit`; fLbl.style.opacity = '1';
+                nEl.selectAll('.node-body')
+                    .attr('fill-opacity', n => n.folder === f ? 0.38 : 0.02)
+                    .attr('stroke-opacity', n => n.folder === f ? 0.95 : 0.05);
+                nEl.selectAll('.node-core').attr('fill-opacity', n => n.folder === f ? 1 : 0.04);
+                nEl.selectAll('.node-label').style('fill', n => n.folder === f ? '#dce4f0' : '#181c22');
+                const inF = l => {
+                    const sk = l.source.key || l.source, tk = l.target.key || l.target;
+                    const sf = pages.find(p => p.key === sk)?.folder, tf = pages.find(p => p.key === tk)?.folder;
+                    return sf === f || tf === f;
+                };
+                wBase.attr('stroke-opacity', l => inF(l) ? 0.55 : 0.03);
+                wGlow.attr('stroke-opacity', l => {
+                    const sk = l.source.key || l.source, tk = l.target.key || l.target;
+                    const sf = pages.find(p => p.key === sk)?.folder, tf = pages.find(p => p.key === tk)?.folder;
+                    return sf === f && tf === f ? 0.65 : 0;
                 });
-                linkGlow.attr('stroke-opacity', l => {
-                    const sf = pages.find(p => p.key === l.source.key)?.folder;
-                    const tf = pages.find(p => p.key === l.target.key)?.folder;
-                    return (sf === folder && tf === folder) ? 0.7 : 0;
-                });
+                if (sBase) sBase.attr('stroke-opacity', l => inF(l) ? 0.30 : 0.01);
+                if (sGlow) sGlow.attr('stroke-opacity', 0);
             }
-
             function clearFocus() {
-                focusedFolder = null;
-                focusLabel.style.opacity = '0';
-                nodeEl.selectAll('circle.node-inner').attr('fill-opacity', 0.18).attr('stroke-opacity', 0.7);
-                nodeEl.selectAll('circle.node-core').attr('fill-opacity', 0.9);
-                nodeEl.selectAll('text.node-label').style('fill', '#5a6070');
-                linkBase.attr('stroke-opacity', 0.5);
-                linkGlow.attr('stroke-opacity', 0);
+                aFocus = null; fLbl.style.opacity = '0';
+                nEl.selectAll('.node-body').attr('fill-opacity', 0.17).attr('stroke-opacity', 0.82);
+                nEl.selectAll('.node-core').attr('fill-opacity', 0.95);
+                nEl.selectAll('.node-label').style('fill', '#6b7585');
+                wBase.attr('stroke-opacity', 0.30); wGlow.attr('stroke-opacity', 0);
+                if (sBase) sBase.attr('stroke-opacity', 0.18); if (sGlow) sGlow.attr('stroke-opacity', 0);
             }
+            svg.on('click', e => { if (e.target.tagName === 'svg') clearFocus(); });
 
-            svg.on('click', (e) => {
-                if (e.target === svg.node() || e.target.tagName === 'svg') clearFocus();
-            });
+            /* ── TICK ──────────────────────────────────── */
+            function updatePositions() {
+                const x1 = d => d.source.x, y1 = d => d.source.y, x2 = d => d.target.x, y2 = d => d.target.y;
+                wGlow.attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2);
+                wBase.attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2);
+                wFlow.attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2);
+                if (sGlow) sGlow.attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2);
+                if (sBase) sBase.attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2);
+                if (sFlow) sFlow.attr('x1', x1).attr('y1', y1).attr('x2', x2).attr('y2', y2);
+                nEl.attr('transform', d => `translate(${d.x},${d.y})`);
+            }
+            sim.on('tick', updatePositions);
 
-            /* ── SIMULATION TICK ──────────────────────────── */
-            simulation.on('tick', () => {
-                function lx1(d) { return d.source.x; } function ly1(d) { return d.source.y; }
-                function lx2(d) { return d.target.x; } function ly2(d) { return d.target.y; }
-
-                linkBase.attr('x1', lx1).attr('y1', ly1).attr('x2', lx2).attr('y2', ly2);
-                linkGlow.attr('x1', lx1).attr('y1', ly1).attr('x2', lx2).attr('y2', ly2);
-                linkFlow.attr('x1', lx1).attr('y1', ly1).attr('x2', lx2).attr('y2', ly2);
-                nodeEl.attr('transform', d => `translate(${d.x},${d.y})`);
-            });
-
-            /* Initial center */
-            svg.call(zoom.transform, d3.zoomIdentity.translate(W / 2, H / 2));
+            svg.call(zoom.transform, d3.zoomIdentity.translate(W / 2, H / 2).scale(0.82));
         }
 
         render().catch(err => {
             console.error(err);
-            document.getElementById('loading-msg').textContent = 'Failed to load: ' + err.message;
+            document.getElementById('loading-msg').textContent = 'Error: ' + err.message;
             document.getElementById('loading-fill').style.background = '#f87171';
         });
     </script>
