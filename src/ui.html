@@ -1067,6 +1067,15 @@
         });
 
         renderList(allPages);
+        
+        // Auto-open page from URL parameter
+        const params = new URLSearchParams(window.location.search);
+        const openKey = params.get('openKey');
+        if (openKey) {
+          const found = allPages.find(p => p.key === openKey);
+          if (found) loadPage(found.key, found);
+        }
+
         document.getElementById('active-count').textContent = allPages.length + ' ACTIVE CONCEPTS';
         setStatus('READY');
       } catch (e) {
@@ -1247,7 +1256,33 @@
         const links = extractWikilinks(rawContent);
 
         // Render markdown
-        content.innerHTML = renderMd(rawContent);
+        content.innerHTML = '<div class="md">' + renderMd(rawContent) + '</div>' +
+          '<div style="padding:20px 0">' +
+          '<button id="enhance-btn" style="background:#1a1c1f;border:1px solid #222426;color:#a3e635;font-family:var(--mono);font-size:11px;padding:8px 16px;border-radius:4px;cursor:pointer;letter-spacing:.05em;">✨ Enhance with AI</button>' +
+          '</div>';
+
+        document.getElementById('enhance-btn').addEventListener('click', async () => {
+          const btn = document.getElementById('enhance-btn');
+          btn.textContent = '⏳ Enhancing...';
+          btn.disabled = true;
+          
+          try {
+            const res = await fetch('/api/enhance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ key: key })
+            });
+            
+            const data2 = await res.json();
+            if (data2.success) {
+              window.location.href = '/?openKey=' + encodeURIComponent(data2.newKey || key);
+            } else {
+              btn.textContent = '❌ Failed';
+            }
+          } catch (e) {
+            btn.textContent = '❌ Error';
+          }
+        });
         loader.remove();
         content.classList.remove('hidden');
         scroll.scrollTop = 0;
