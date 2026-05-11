@@ -37,7 +37,6 @@ The more you feed it, the smarter it gets about **you**.
 | | |
 |---|---|
 | 🌐 Web UI | [my-wiki-mcp.aradhyaparab21.workers.dev](https://my-wiki-mcp.aradhyaparab21.workers.dev) |
-| 🕸️ Graph view | [my-wiki-mcp.aradhyaparab21.workers.dev/graph](https://my-wiki-mcp.aradhyaparab21.workers.dev/graph) |
 
 > These are my personal instances. You deploy your own — takes ~30 minutes.
 
@@ -354,7 +353,7 @@ Claude reads your own notes and answers from them. That's the moment it clicks. 
 
 ---
 
-### 14. Connect to Claude.ai (Pro plan)
+### 14. Connect to Claude.ai
 
 Go to [claude.ai/settings/connectors](https://claude.ai/settings/connectors) → Add custom connector → paste your MCP URL → set permissions to **Always allowed**.
 
