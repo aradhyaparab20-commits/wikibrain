@@ -2,6 +2,7 @@ import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
+
 interface Env extends Cloudflare.Env {
   WIKI: KVNamespace;
   AI: any;
@@ -285,6 +286,13 @@ export default {
         headers: { "Content-Type": "application/json" },
       });
     }
+    if (url.pathname === "/graph") {
+      return new Response(GRAPH, {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
+    }
+
+
 
     if (url.pathname === "/api/test-report") {
       await sendWeeklyReport(env);
